@@ -1,70 +1,60 @@
 package com.example.t2009m1spring.controller.product;
 
 import com.example.t2009m1spring.entity.Product;
+import com.example.t2009m1spring.service.product.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
-    private static List<Product> products = new ArrayList<>();
+    @Autowired
+    ProductService productService;
     @RequestMapping(method = RequestMethod.POST)
-    public Product save(@RequestBody Product product) {
-        products.add(product);
-        return product;
+    public ResponseEntity<Product> save(@RequestBody Product product) {
+        return ResponseEntity.ok(productService.save(product));
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<Product> findAll() {
-        return products;
+    public ResponseEntity<List<Product>> findAll() {
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "{id}")
-    public Product findById(@RequestParam int id) {
-        int index = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getId() == id) {
-                index = i;
-            }
+    public ResponseEntity<?> findById(@PathVariable int id) {
+        Optional<Product> product = productService.findById(id);
+        if (!product.isPresent()){
+            ResponseEntity.badRequest().build();
         }
-        if (index == -1) {
-            return null;
-        }
-        return products.get(index);
+        return ResponseEntity.ok(product.get());
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "{id}")
-    public Product update(@RequestParam int id, @RequestBody Product product) {
-        int index = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getId() == id) {
-                index = i;
-            }
+    public ResponseEntity<Product> update(@PathVariable int id, @RequestBody Product product) {
+        Optional<Product> productId = productService.findById(id);
+        if (!productId.isPresent()){
+            ResponseEntity.badRequest().build();
         }
-        if (index == -1) {
-            return null;
-        }
-        products.get(index).setName(product.getName());
-        products.get(index).setDescription(product.getDescription());
-        products.get(index).setSlug(product.getSlug());
-        products.get(index).setThumbnail(product.getThumbnail());
-        products.get(index).setStatus(product.getStatus());
-        return products.get(index);
+        Product exitsProduct = productId.get();
+        exitsProduct.setName(product.getName());
+        exitsProduct.setThumbnail(product.getThumbnail());
+        exitsProduct.setDescription(product.getDescription());
+        exitsProduct.setSlug(product.getSlug());
+        exitsProduct.setStatus(product.getStatus());
+        return ResponseEntity.ok(productService.save(exitsProduct));
     }
     @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
-    public Product delete(@RequestParam int id) {
-        int index = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getId() == id) {
-                index = i;
-            }
+    public ResponseEntity<?> delete(@PathVariable int id) {
+        Optional<Product> product = productService.findById(id);
+        if (!product.isPresent()){
+            ResponseEntity.badRequest().build();
         }
-        if (index == -1) {
-            return null;
-        }
-        products.remove(index);
-        return null;
+        productService.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }
