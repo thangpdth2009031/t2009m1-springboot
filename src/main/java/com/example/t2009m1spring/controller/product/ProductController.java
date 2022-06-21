@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-@CrossOrigin("*")
+@CrossOrigin("http://localhost:63343")
 @RestController
 @RequestMapping("/api/v1/products")
 public class ProductController {
